@@ -1,59 +1,29 @@
-import React, { useState } from "react";
 import "./ExploreContainer.css";
-import { Address, RepositoryFactoryHttp } from "symbol-sdk";
 import { IonButton } from "@ionic/react";
+import { getAccountMosaics, sendMosaic } from "../util/symbol";
 
 const ExploreContainer = () => {
-  const [mosaicArray, setMosaicArray] = useState<any[]>([]);
-  var loop = () => {
-    const items = [];
-    for (let i = 0; i < mosaicArray.length; i++) {
-      items.push(
-        <li key={mosaicArray[i].id}>
-          <p>{mosaicArray[i].id}</p>
-          <p>{mosaicArray[i].amount}</p>
-        </li>
-      );
-    }
-    return <ul>{items}</ul>;
-  };
+  const managedPrivateKey = process.env.REACT_APP_MANAGED_PRIVATE_KEY;
+  const zaicoPrivateKey = process.env.REACT_APP_ZAICO_PRIVATE_KEY;
+  const managedAddress = process.env.REACT_APP_MANAGED_ADDRESS;
+  const zaicoAddress = process.env.REACT_APP_ZAICO_ADDRESS;
+  const nodeUrl = process.env.REACT_APP_NODE_URL;
 
-  const getAccountMosaics = () => {
-    const rawAddress = "TAEFXKFB4GJEO7ZSUN2RG4ZB2GIN4WKLGPQHSPQ";
-    const address = Address.createFromRawAddress(rawAddress);
-    // replace with node endpoint
-    const nodeUrl = "http://ngl-dual-101.testnet.symboldev.network:3000";
-    const repositoryFactory = new RepositoryFactoryHttp(nodeUrl);
-    const accountHttp = repositoryFactory.createAccountRepository();
-    const divisibility = 6;
-    const mosaicsArrayList: any[] = [];
-
-    accountHttp.getAccountInfo(address).subscribe(
-      (accountInfo) => {
-        console.log(accountInfo);
-        for (let i = 0; i < accountInfo.mosaics.length; i++) {
-          const mosaics = { id: "", amount: 0 };
-          mosaics.id = accountInfo.mosaics[i].id.toHex();
-          if (mosaics.id === "091F837E059AE13C") {
-            mosaics.amount =
-              accountInfo.mosaics[i].amount.compact() /
-              Math.pow(10, divisibility);
-          } else {
-            mosaics.amount =
-              accountInfo.mosaics[i].amount.compact() / Math.pow(10, 1);
-          }
-          mosaicsArrayList.push(mosaics);
-        }
-        console.log(mosaicsArrayList);
-        setMosaicArray(mosaicsArrayList);
-      },
-      (err) => console.error(err)
-    );
-  };
   return (
     <>
-      <IonButton onClick={getAccountMosaics}>テスト</IonButton>
-      {loop()}
+      <IonButton onClick={() => getAccountMosaics(zaicoAddress!, nodeUrl!)}>
+        冷蔵庫テスト
+      </IonButton>
+      <IonButton
+        onClick={() => sendMosaic(managedPrivateKey!, zaicoAddress!, nodeUrl!)}
+      >
+        在庫側トランザクションテスト
+      </IonButton>
+      <IonButton
+        onClick={() => sendMosaic(zaicoPrivateKey!, managedAddress!, nodeUrl!)}
+      >
+        冷蔵庫側トランザクションテスト
+      </IonButton>
     </>
   );
 };
