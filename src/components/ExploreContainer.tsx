@@ -1,29 +1,48 @@
 import "./ExploreContainer.css";
 import { IonButton } from "@ionic/react";
-import { getAccountMosaics, sendMosaic } from "../util/symbol";
+import { sendMosaic } from "../util/symbol";
+import { revoke } from "../util/revoke";
+import { Address, RepositoryFactoryHttp } from "symbol-sdk";
+import { useState } from "react";
 
 const ExploreContainer = () => {
-  const managedPrivateKey = process.env.REACT_APP_MANAGED_PRIVATE_KEY;
-  const zaicoPrivateKey = process.env.REACT_APP_ZAICO_PRIVATE_KEY;
-  const managedAddress = process.env.REACT_APP_MANAGED_ADDRESS;
-  const zaicoAddress = process.env.REACT_APP_ZAICO_ADDRESS;
-  const nodeUrl = process.env.REACT_APP_NODE_URL;
+  const [mosaicAmount, setMosaicAmount] = useState(0);
+  const accountInfo = [{
+    name: "醤油", address: process.env.REACT_APP_SYOYU_ADDRESS
+  }]
+  const revokeFunction = () => {
+    revoke()
+      .then(() => {})
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
+  const getAccountMosaics = () => {
+    const address = Address.createFromRawAddress(
+      process.env.REACT_APP_SYOYU_ADDRESS!
+    );
+    const repositoryFactory = new RepositoryFactoryHttp(
+      process.env.REACT_APP_NODE_URL!
+    );
+    const accountHttp = repositoryFactory.createAccountRepository();
+
+    accountHttp.getAccountInfo(address).subscribe(
+      (accountInfo) => {
+        setMosaicAmount(accountInfo.mosaics[0].amount.compact());
+      },
+      (err) => console.error(err)
+    );
+  };
 
   return (
     <>
-      <IonButton onClick={() => getAccountMosaics(zaicoAddress!, nodeUrl!)}>
-        冷蔵庫テスト
+      <IonButton onClick={() => revokeFunction()}>取り戻す</IonButton>
+      <IonButton onClick={() => sendMosaic()}>送信テスト</IonButton>
+      <IonButton onClick={() => getAccountMosaics()}>
+        アカウント情報取得
       </IonButton>
-      <IonButton
-        onClick={() => sendMosaic(managedPrivateKey!, zaicoAddress!, nodeUrl!)}
-      >
-        在庫側トランザクションテスト
-      </IonButton>
-      <IonButton
-        onClick={() => sendMosaic(zaicoPrivateKey!, managedAddress!, nodeUrl!)}
-      >
-        冷蔵庫側トランザクションテスト
-      </IonButton>
+      {accountInfo[0].name}:{mosaicAmount / 10}
     </>
   );
 };
