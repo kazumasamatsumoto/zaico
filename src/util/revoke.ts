@@ -10,7 +10,7 @@ import {
   UInt64,
 } from "symbol-sdk";
 
-export async function revoke() {
+export async function revoke(revisedAddress: string) {
   const node: string = process.env.REACT_APP_NODE_URL!;
   const repoFactory = new RepositoryFactoryHttp(node!, {
     websocketUrl: node.replace("http", "ws") + "/ws",
@@ -27,8 +27,8 @@ export async function revoke() {
     const mosaicId = new MosaicId(process.env.REACT_APP_MOSAIC_ID!);
     const tx = MosaicSupplyRevocationTransaction.create(
       Deadline.create(epochAdjustment),
-      Address.createFromRawAddress("TBH65JM4C4PZ3Z2QMFOU2JTHTZBMJRVPF6H234A"),
-      new Mosaic(mosaicId, UInt64.fromUint(3)),
+      Address.createFromRawAddress(revisedAddress),
+      new Mosaic(mosaicId, UInt64.fromUint(1)),
       networkType
     ).setMaxFee(1000);
 
